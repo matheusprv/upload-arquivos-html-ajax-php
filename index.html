@@ -1,0 +1,167 @@
+
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de arquivos</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="http://jqueryvalidation.org/files/dist/jquery.validate.js"></script>
+</head>
+
+<style>
+    .upload:hover {
+        color: rgb(90, 152, 223);
+        transition: .4s;
+        cursor: pointer;
+    }
+
+    .botao {
+        width: 100px;
+        text-align: center;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+
+    .row {
+        margin-bottom: 15px;
+    }
+
+    .upload {
+        margin-top: 8px;
+    }
+
+    a{
+        text-decoration: none;
+        color: white;
+    }
+</style>
+
+<body>
+
+    <form id="formulario" action="upload.php" method="post" enctype="multipart/form-data">
+        <div class="col-md-5 row">
+            <div class="col-md-6 upload" style="text-align: center;" onclick="pegarArquivos('labelArquivo1', 'fileInput', 'pdfIcone1')">
+                <i class="fa fa-file-pdf-o" aria-hidden="true" id="pdfIcone1" style="font-size: 40px;"></i> <br>
+                <label id="labelArquivo1" for="arquivo1">Selecionar arquivo</label>
+                <input type="file" id="fileInput" name="fileInput[]" accept="application/pdf" hidden required>
+
+            </div>
+
+            <div class="col-md-6">
+                <div class="botao btn btn-info" onclick="pegarArquivos('labelArquivo1', 'fileInput', 'pdfIcone1')">
+                    Alterar
+                </div> <br>
+                <div class="botao btn btn-danger" onclick="removerArquivo('labelArquivo1', 'fileInput', 'pdfIcone1')">
+                    Remover
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 row">
+            <div class="col-md-6 upload" style="text-align: center;" onclick="pegarArquivos('labelArquivo2', 'fileInput2', 'pdfIcone2')">
+                <i class="fa fa-file-pdf-o" aria-hidden="true" id="pdfIcone2" style="font-size: 40px;"></i> <br>
+                <label id="labelArquivo2" for="arquivo1">Selecionar arquivo</label>
+                <input type="file" id="fileInput2" name="fileInput[]" accept="application/pdf" hidden required>
+
+            </div>
+
+            <div class="col-md-6">
+                <div class="botao btn btn-info" onclick="pegarArquivos('labelArquivo2', 'fileInput2', 'pdfIcone2')">
+                    Alterar
+                </div> <br>
+                <div class="botao btn btn-danger" onclick="removerArquivo('labelArquivo2', 'fileInput2', 'pdfIcone2')">
+                    Remover
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <input type="submit" id="botaoSubmit" name="upload" style="margin: auto; display: block; cursor: pointer;" value="Salvar tudo">
+        </div>
+        
+    </form>
+
+
+</body>
+
+</html>
+
+<script>
+    function pegarArquivos(label, input, pdfIcone) {
+
+        const labelArquivo1 = document.getElementById(label);
+        let fileInput = document.getElementById(input);
+
+        //Gerando um evento de clique ao input de arquivos já que está invisível
+        fileInput.click();
+
+        //Exibindo o nome do arquivo e exibindo para o usuário
+        fileInput.onchange = ({ target }) => {
+            let file = target.files[0];
+            if (file) {
+                let fileName = file.name;
+                if (fileName.length >= 12) {
+                    let splitName = fileName.split('.');
+                    fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
+                }
+                document.getElementById(label).innerHTML = fileName;
+                document.getElementById(pdfIcone).style.color = "red";
+            }
+        }
+
+    }
+
+    function removerArquivo(label, input, pdfIcone) {
+        //Reiniciar valores do campo que foi solicitado a remoção
+        document.getElementById(label).innerHTML = "Selecionar arquivo";
+        document.getElementById(pdfIcone).style.color = "black";
+        document.getElementById(input).value = null;
+
+    }
+
+
+    $("#formulario").validate({
+        submitHandler: function () {
+            // crie um FormData {Object} para passar as informações pelo AJAX
+            var form = $('#formulario')[0];
+            var data = new FormData(form);
+
+            //ENVIA ACTION POR AJAX
+            $.ajax({
+                type: "POST",
+                url: "upload.php",
+                data: data,
+                enctype: 'multipart/form-data',
+                contentType: false,
+                processData: false,
+
+
+                beforeSend: function () {
+                    $("#botaoSubmit").prop("disabled", true);
+                },
+
+                complete: function () {
+                    $("#botaoSubmit").prop("disabled", false);
+                },
+
+                success: function (resposta) {
+                    alert(resposta);
+                },
+                error: function (jqxhr, status, exception) {
+                    alert('Exception:' + exception + "\n jqxhr: " + jqxhr.toString() + "\nStatus: " + status);
+                }
+
+            });
+            return false;
+        } 
+    });
+</script>
